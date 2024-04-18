@@ -1,51 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HG Free</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Speed Reader</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            text-align: center;
-            height: 100vh;
+        body, html {
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
         }
-        h1 {
-            font-size: 6rem; /* Default size for mobile, will be overridden for desktops */
-            background-image: linear-gradient(to left, #f22, #f2f);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            animation: backgroundAnimation 5s ease-in-out infinite;
-        }
-        p {
-            font-size: 2rem; /* Default size for mobile, will be overridden for desktops */
-        }
-        @keyframes backgroundAnimation {
-            0% { background-position: left; }
-            50% { background-position: right; }
-            100% { background-position: left; }
-        }
-
-        /* Media query for devices with a minimum width of 601px (typical desktops) */
-        @media (min-width: 601px) {
-            h1 {
-                font-size: 8rem; /* Larger text size for desktops */
-            }
-            p {
-                font-size: 3rem; /* Larger text size for desktop paragraphs */
-            }
+        #display {
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
-    <h1>HG Free</h1>
-    <p>"you back?"</p>
+    <div id="display">Loading...</div>
+    <script src="script.js"></script>
 </body>
 </html>
+
