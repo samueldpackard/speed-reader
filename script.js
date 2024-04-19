@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayElement = document.getElementById('display');
     const progressBar = document.getElementById('progressBar');
     const indexDisplay = document.getElementById('indexDisplay');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsButton = document.getElementById('settingsButton');
     let wordsPerMinute = localStorage.getItem('wordsPerMinute') ? parseInt(localStorage.getItem('wordsPerMinute'), 10) : 200;
     let fontSize = localStorage.getItem('fontSize') ? parseInt(localStorage.getItem('fontSize'), 10) : 24;
     let delay = (60 / wordsPerMinute) * 1000;
@@ -21,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         while (startIndex < words.length) {
             let chunkEndIndex = startIndex + 3;
             for (let i = startIndex; i < Math.min(startIndex + 3, words.length); i++) {
-                if (words[i].includes('.')) {
+                if (words[i].includes('.') || words[i].includes(';') || words[i].includes('?') || words[i].includes('!')) {
                     chunkEndIndex = i + 1;
                     break;
                 }
@@ -51,12 +53,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch((e) => {
+            document.documentElement.requestFullscreen().then(() => {
+                progressBar.style.visibility = 'hidden';
+                indexDisplay.style.visibility = 'hidden';
+                settingsButton.style.visibility = 'hidden';
+                if (settingsPanel.style.display !== 'none') {
+                    settingsPanel.style.display = 'none';
+                }
+            }).catch((e) => {
                 console.error('Error attempting to enable full-screen mode:', e);
             });
         } else {
             if (document.exitFullscreen) {
-                document.exitFullscreen();
+                document.exitFullscreen().then(() => {
+                    progressBar.style.visibility = 'visible';
+                    indexDisplay.style.visibility = 'visible';
+                    settingsButton.style.visibility = 'visible';
+                });
             }
         }
     }
@@ -103,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('settingsButton').addEventListener('click', function() {
-        document.getElementById('settingsPanel').style.display = 'block';
+        settingsPanel.style.display = (settingsPanel.style.display === 'none' ? 'block' : 'none');
     });
 
     document.getElementById('saveSettingsButton').addEventListener('click', function() {
@@ -113,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         delay = (60 / wordsPerMinute) * 1000;
         displayElement.style.fontSize = `${fontSize}px`;
 
-        document.getElementById('settingsPanel').style.display = 'none';
+        settingsPanel.style.display = 'none';
 
         localStorage.setItem('wordsPerMinute', wordsPerMinute);
         localStorage.setItem('fontSize', fontSize);
@@ -125,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('wordsPerMinuteInput').value = wordsPerMinute;
-    document.getElementById('fontSizeInput'). value = fontSize;
+    document.getElementById('fontSizeInput').value = fontSize;
 
     fetch('txtfiles/' + bookFile)
         .then(response => {
