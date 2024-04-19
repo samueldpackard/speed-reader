@@ -37,9 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
             progressBar.value = currentChunkIndex;
             indexDisplay.value = currentChunkIndex + 1;
             localStorage.setItem(bookFile, currentChunkIndex);
-            currentChunkIndex++;
             if (!isPaused) {
-                timeoutHandle = setTimeout(startDisplay, delay);
+                timeoutHandle = setTimeout(function() {
+                    currentChunkIndex++;
+                    startDisplay();
+                }, delay);
             }
         } else {
             displayElement.innerText = "End of text.";
@@ -79,22 +81,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 timeoutHandle = null;
             }
         } else if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+            event.preventDefault();
             if (!isPaused) {
                 isPaused = true;
-                if (timeoutHandle) {
-                    clearTimeout(timeoutHandle);
-                    timeoutHandle = null;
+                clearTimeout(timeoutHandle);
+                timeoutHandle = null;
+            } else {
+                if (event.key === 'ArrowRight' && currentChunkIndex < chunks.length - 1) {
+                    currentChunkIndex++;
+                } else if (event.key === 'ArrowLeft' && currentChunkIndex > 0) {
+                    currentChunkIndex--;
                 }
+                displayElement.innerText = chunks[currentChunkIndex];
+                progressBar.value = currentChunkIndex;
+                indexDisplay.value = currentChunkIndex + 1;
+                localStorage.setItem(bookFile, currentChunkIndex);
             }
-            if (event.key === 'ArrowRight' && currentChunkIndex < chunks.length - 1) {
-                currentChunkIndex++;
-            } else if (event.key === 'ArrowLeft' && currentChunkIndex > 0) {
-                currentChunkIndex--;
-            }
-            displayElement.innerText = chunks[currentChunkIndex];
-            progressBar.value = currentChunkIndex;
-            indexDisplay.value = currentChunkIndex + 1;
-            localStorage.setItem(bookFile, currentChunkIndex);
         } else if (event.key === 'f') {
             toggleFullScreen();
         }
@@ -123,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('wordsPerMinuteInput').value = wordsPerMinute;
-    document.getElementById('fontSizeInput').value = fontSize;
+    document.getElementById('fontSizeInput'). value = fontSize;
 
     fetch('txtfiles/' + bookFile)
         .then(response => {
