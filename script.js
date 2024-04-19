@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookFile = params.get('book') + '.txt';
     const displayElement = document.getElementById('display');
     const progressBar = document.getElementById('progressBar');
+    const indexDisplay = document.getElementById('indexDisplay'); // Ensure this is in your HTML
     const wordsPerMinute = 200;
     const delay = (60 / wordsPerMinute) * 1000;
     let isPaused = true;
@@ -10,33 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let chunks = [];
     let currentChunkIndex = 0;
 
-    fetch('txtfiles/' + bookFile)
-    .then(response => response.text())
-    .then(text => {
-        processTextIntoChunks(text);
-        progressBar.max = chunks.length - 1;
-        progressBar.style.visibility = 'visible';
-        currentChunkIndex = localStorage.getItem(bookFile) ? parseInt(localStorage.getItem(bookFile), 10) : 0;
-        progressBar.value = currentChunkIndex;
-        displayElement.innerText = chunks[currentChunkIndex] || "End of text.";
-    })
-    .catch(error => {
-        console.error('Error loading the text file:', error);
-        displayElement.innerText = "Failed to load text.";
-    });
-
-    progressBar.addEventListener('input', function() {
-        currentChunkIndex = parseInt(this.value, 10);
-        displayElement.innerText = chunks[currentChunkIndex];
-        localStorage.setItem(bookFile, currentChunkIndex);
-    });
-
     function processTextIntoChunks(text) {
         const words = text.split(/\s+/);
         let startIndex = 0;
+
         while (startIndex < words.length) {
-            let chunkEndIndex = startIndex + 3;
-            for (let i = startIndex; i < startIndex + 3 && i < words.length; i++) {
+            let chunkEndIndex = startIndex + 3; // Define the size of the chunk as 3
+            // Adjust chunk size for sentence endings within 3 words
+            for (let i = startIndex; i < Math.min(startIndex + 3, words.length); i++) {
                 if (words[i].includes('.')) {
                     chunkEndIndex = i + 1;
                     break;
@@ -51,31 +33,77 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentChunkIndex < chunks.length) {
             displayElement.innerText = chunks[currentChunkIndex];
             progressBar.value = currentChunkIndex;
+            indexDisplay.innerText = `Index: ${currentChunkIndex + 1}`;
+            localStorage.setItem(bookFile, currentChunkIndex);
+            currentChunkIndex++;
             if (!isPaused) {
                 timeoutHandle = setTimeout(startDisplay, delay);
             }
-            localStorage.setItem(bookFile, currentChunkIndex);
-            currentChunkIndex++;
         } else {
             displayElement.innerText = "End of text.";
+            isPaused = true; // Stop when at the end of the text
         }
     }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((e) => {
+                console.error('Error attempting to enable full-screen mode:', e);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    console.log('Attempting to load:', 'txtfiles/' + bookFile);
+
+    fetch('txtfiles/' + bookFile)
+        .then(response => {
+            console.log('Fetch response:', response);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(text => {
+            processTextIntoChunks(text);
+            progressBar.max = chunks.length - 1;
+            progressBar.style.visibility = 'visible';
+            currentChunkIndex = localStorage.getItem(bookFile) ? parseInt(localStorage.getItem(bookFile), 10) : 0;
+            progressBar.value = currentChunkIndex;
+            displayElement.innerText = chunks[currentChunkIndex] || "End of text.";
+            indexDisplay.innerText = `Index: ${currentChunkIndex + 1}`;
+        })
+        .catch(error => {
+            console.error('Error fetching/loading the text file:', error);
+            displayElement.innerText = "Failed to load text.";
+        });
+
+    progressBar.addEventListener('input', function() {
+        currentChunkIndex = parseInt(this.value, 10);
+        displayElement.innerText = chunks[currentChunkIndex];
+        indexDisplay.innerText = `Index: ${currentChunkIndex + 1}`;
+        localStorage.setItem(bookFile, currentChunkIndex);
+    });
 
     document.body.addEventListener('keydown', function(event) {
         if (event.key === ' ') {
             event.preventDefault();
             isPaused = !isPaused;
-            if (!isPaused) {
+            if (!isPaused && currentChunkIndex < chunks.length) {
                 startDisplay();
             } else if (timeoutHandle) {
                 clearTimeout(timeoutHandle);
                 timeoutHandle = null;
             }
         } else if (event.key === 'ArrowRight') {
-            if (currentChunkIndex < chunks.length) {
+            if (currentChunkIndex < chunks.length - 1) {
                 currentChunkIndex++;
                 progressBar.value = currentChunkIndex;
                 displayElement.innerText = chunks[currentChunkIndex];
+                indexDisplay.innerText = `Index: ${currentChunkIndex + 1}`;
                 localStorage.setItem(bookFile, currentChunkIndex);
             }
         } else if (event.key === 'ArrowLeft') {
@@ -83,8 +111,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentChunkIndex--;
                 progressBar.value = currentChunkIndex;
                 displayElement.innerText = chunks[currentChunkIndex];
+                indexDisplay.innerText = `Index: ${currentChunkIndex + 1}`;
                 localStorage.setItem(bookFile, currentChunkIndex);
             }
+        } else if (event.key === 'f') {
+            toggleFullScreen();
         }
     });
 });
