@@ -1,33 +1,44 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const bookFile = params.get('book') + '.txt';
     const displayElement = document.getElementById('display');
+    const progressBar = document.getElementById('progressBar');
     const wordsPerMinute = 200;
-    const delay = (60 / wordsPerMinute) * 1000; // delay between chunks
-    let isPaused = true; // Start in a paused state
+    const delay = (60 / wordsPerMinute) * 1000;
+    let isPaused = true;
     let timeoutHandle = null;
     let chunks = [];
     let currentChunkIndex = 0;
 
-    fetch('txtfiles/7habits.txt')
+    fetch('txtfiles/' + bookFile)
     .then(response => response.text())
     .then(text => {
         processTextIntoChunks(text);
-        // Check for a stored bookmark
-        currentChunkIndex = localStorage.getItem('bookmark') ? parseInt(localStorage.getItem('bookmark'), 10) : 0;
-        displayElement.innerText = chunks[currentChunkIndex] || "End of text."; // Display the first chunk or stored bookmark
+        progressBar.max = chunks.length - 1;
+        progressBar.style.visibility = 'visible';
+        currentChunkIndex = localStorage.getItem(bookFile) ? parseInt(localStorage.getItem(bookFile), 10) : 0;
+        progressBar.value = currentChunkIndex;
+        displayElement.innerText = chunks[currentChunkIndex] || "End of text.";
     })
     .catch(error => {
         console.error('Error loading the text file:', error);
         displayElement.innerText = "Failed to load text.";
     });
 
+    progressBar.addEventListener('input', function() {
+        currentChunkIndex = parseInt(this.value, 10);
+        displayElement.innerText = chunks[currentChunkIndex];
+        localStorage.setItem(bookFile, currentChunkIndex);
+    });
+
     function processTextIntoChunks(text) {
         const words = text.split(/\s+/);
         let startIndex = 0;
         while (startIndex < words.length) {
-            let chunkEndIndex = startIndex + 3; // Default next chunk end index
+            let chunkEndIndex = startIndex + 3;
             for (let i = startIndex; i < startIndex + 3 && i < words.length; i++) {
                 if (words[i].includes('.')) {
-                    chunkEndIndex = i + 1; // Adjust chunk end index if period is found
+                    chunkEndIndex = i + 1;
                     break;
                 }
             }
@@ -39,38 +50,42 @@ document.addEventListener('DOMContentLoaded', function() {
     function startDisplay() {
         if (currentChunkIndex < chunks.length) {
             displayElement.innerText = chunks[currentChunkIndex];
+            progressBar.value = currentChunkIndex;
             if (!isPaused) {
                 timeoutHandle = setTimeout(startDisplay, delay);
             }
-            localStorage.setItem('bookmark', currentChunkIndex); // Update bookmark every time a new chunk is displayed
+            localStorage.setItem(bookFile, currentChunkIndex);
             currentChunkIndex++;
         } else {
-            displayElement.innerText = "End of text."; // End of the chunks
+            displayElement.innerText = "End of text.";
         }
     }
 
     document.body.addEventListener('keydown', function(event) {
         if (event.key === ' ') {
-            event.preventDefault(); // Prevent the default action of the spacebar
-            isPaused = !isPaused; // Toggle the paused state
+            event.preventDefault();
+            isPaused = !isPaused;
             if (!isPaused) {
-                startDisplay(); // Start displaying text if not paused
+                startDisplay();
             } else if (timeoutHandle) {
-                clearTimeout(timeoutHandle); // Clear the timeout if paused
+                clearTimeout(timeoutHandle);
                 timeoutHandle = null;
             }
         } else if (event.key === 'ArrowRight') {
             if (currentChunkIndex < chunks.length) {
-                displayElement.innerText = chunks[currentChunkIndex];
-                localStorage.setItem('bookmark', currentChunkIndex); // Update bookmark on manual navigation
                 currentChunkIndex++;
+                progressBar.value = currentChunkIndex;
+                displayElement.innerText = chunks[currentChunkIndex];
+                localStorage.setItem(bookFile, currentChunkIndex);
             }
         } else if (event.key === 'ArrowLeft') {
-            if (currentChunkIndex > 1) { // Ensure there's a previous chunk to display
+            if (currentChunkIndex > 0) {
                 currentChunkIndex--;
-                displayElement.innerText = chunks[currentChunkIndex - 1];
-                localStorage.setItem('bookmark', currentChunkIndex - 1); // Update bookmark on manual navigation
+                progressBar.value = currentChunkIndex;
+                displayElement.innerText = chunks[currentChunkIndex];
+                localStorage.setItem(bookFile, currentChunkIndex);
             }
         }
     });
 });
+

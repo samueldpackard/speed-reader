@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Speed Reader</title>
+    <title>Speed Reader - Select a Book</title>
     <style>
         body, html {
             height: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            padding: 20px;
         }
-        #display {
+        a {
             font-size: 24px;
+            color: #000;
+            text-decoration: none;
+            padding: 8px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        a:hover {
+            background-color: #e8e8e8;
         }
     </style>
 </head>
 <body>
-    <div id="display">Loading...</div>
-    <script src="script.js"></script>
+    <h1>Select a Book</h1>
+    <a href="book.html?book=7habits">The 7 Habits of Highly Effective People</a>
+    <a href="book.html?book=howtoinfluence">How to Win Friends and Influence People</a>
+    <a href="book.html?book=thinkgrowrich">Think and Grow Rich</a>
 </body>
 </html>
 
