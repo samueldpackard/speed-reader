@@ -4,12 +4,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayElement = document.getElementById('display');
     const progressBar = document.getElementById('progressBar');
     const indexDisplay = document.getElementById('indexDisplay');
-    const wordsPerMinute = 200;
-    const delay = (60 / wordsPerMinute) * 1000;
+    let wordsPerMinute = localStorage.getItem('wordsPerMinute') ? parseInt(localStorage.getItem('wordsPerMinute'), 10) : 200;
+    let fontSize = localStorage.getItem('fontSize') ? parseInt(localStorage.getItem('fontSize'), 10) : 24;
+    let delay = (60 / wordsPerMinute) * 1000;
     let isPaused = true;
     let timeoutHandle = null;
     let chunks = [];
     let currentChunkIndex = 0;
+
+    displayElement.style.fontSize = `${fontSize}px`;
 
     function processTextIntoChunks(text) {
         const words = text.split(/\s+/);
@@ -49,13 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.documentElement.requestFullscreen().catch((e) => {
                 console.error('Error attempting to enable full-screen mode:', e);
             });
-            progressBar.style.visibility = 'hidden'; // Hide progress bar in full-screen
-            indexDisplay.style.visibility = 'hidden'; // Hide index number in full-screen
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-                progressBar.style.visibility = 'visible'; // Show progress bar when exiting full-screen
-                indexDisplay.style.visibility = 'visible'; // Show index number when exiting full-screen
             }
         }
     }
@@ -101,7 +100,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    console.log('Attempting to load:', 'txtfiles/' + bookFile);
+    document.getElementById('settingsButton').addEventListener('click', function() {
+        document.getElementById('settingsPanel').style.display = 'block';
+    });
+
+    document.getElementById('saveSettingsButton').addEventListener('click', function() {
+        wordsPerMinute = parseInt(document.getElementById('wordsPerMinuteInput').value, 10);
+        fontSize = parseInt(document.getElementById('fontSizeInput').value, 10);
+
+        delay = (60 / wordsPerMinute) * 1000;
+        displayElement.style.fontSize = `${fontSize}px`;
+
+        document.getElementById('settingsPanel').style.display = 'none';
+
+        localStorage.setItem('wordsPerMinute', wordsPerMinute);
+        localStorage.setItem('fontSize', fontSize);
+
+        if (!isPaused) {
+            clearTimeout(timeoutHandle);
+            startDisplay();
+        }
+    });
+
+    document.getElementById('wordsPerMinuteInput').value = wordsPerMinute;
+    document.getElementById('fontSizeInput').value = fontSize;
 
     fetch('txtfiles/' + bookFile)
         .then(response => {

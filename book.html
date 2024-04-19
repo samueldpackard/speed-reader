@@ -9,8 +9,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #000; /* Black background */
-            color: #fff; /* White text */
+            background-color: #000;
+            color: #fff;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -18,6 +18,25 @@
         #display {
             font-size: 24px;
             margin-bottom: 20px;
+        }
+        #settingsButtonContainer {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+        }
+        #settingsButton, #saveSettingsButton {
+            padding: 5px 10px;
+            margin-top: 5px;
+            font-size: 16px;
+        }
+        #settingsPanel {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
         }
         #indexDisplay {
             position: fixed;
@@ -27,8 +46,8 @@
             color: #fff;
             border: none;
             background: none;
-            width: auto; /* Adjust width based on content */
-            min-width: 60px; /* Minimum width to handle up to 4 digits */
+            width: auto;
+            min-width: 60px;
             text-align: right;
         }
         #progressContainer {
@@ -46,6 +65,18 @@
     <div id="display">Loading...</div>
     <div id="progressContainer">
         <input type="range" id="progressBar" min="0" value="0" style="visibility:hidden;">
+    </div>
+    <div id="settingsButtonContainer">
+        <button id="settingsButton">Settings</button>
+    </div>
+    <div id="settingsPanel">
+        <label for="wordsPerMinuteInput">Words per minute:</label>
+        <input type="number" id="wordsPerMinuteInput" value="200" min="100" max="1000">
+        <br>
+        <label for="fontSizeInput">Font size:</label>
+        <input type="number" id="fontSizeInput" value="24" min="10" max="48">
+        <br>
+        <button id="saveSettingsButton">Save</button>
     </div>
     <script src="script.js"></script>
     <input type="number" id="indexDisplay" value="1" min="1" style="text-align: right;">
